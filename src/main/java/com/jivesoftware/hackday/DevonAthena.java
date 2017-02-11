@@ -25,7 +25,7 @@ public class DevonAthena implements RequestHandler<S3Event, String> {
 
     static final String partitionTemplate =
             "ALTER TABLE devonathena.logs_raw ADD IF NOT EXISTS PARTITION " +
-                    "(year = %1$s, month = %2$s, day = %2$s, hour = %2$s) " +
+                    "(year = %1$s, month = %2$s, day = %3$s, hour = %4$s) " +
                     "LOCATION 's3://devon-hackday/logs/%1$s/%2$s/%3$s/%4$s'";
 
 
