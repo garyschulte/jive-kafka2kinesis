@@ -32,7 +32,24 @@
         <dependency>
             <groupId>com.jivesoftware.community.cloudalytics</groupId>
             <artifactId>master-data-transform</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.1.8</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-dbutils</groupId>
+            <artifactId>commons-dbutils</artifactId>
+            <version>1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>3rdparty</groupId>
+            <artifactId>AthenaJDBC</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/AthenaJDBC41-1.0.0.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>3rdparty</groupId>
+            <artifactId>AthenaJDBC41</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 

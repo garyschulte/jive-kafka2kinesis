@@ -16,9 +16,9 @@ import com.amazonaws.services.s3.model.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.jivesoftware.community.cloudalytics.event.JsonAvroCloner;
-import com.jivesoftware.community.cloudalytics.event.avro.AvroEvent;
-import com.jivesoftware.community.cloudalytics.event.jsonschema.EventDocument;
+import com.jivesoftware.community.cloudalytics.masterdata.avro.AvroEvent;
+import com.jivesoftware.community.cloudalytics.masterdata.jsonschema.AnalyticsEventDocument;
+import com.jivesoftware.community.cloudalytics.masterdata.util.Json2AvroCloner;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.io.DatumWriter;
@@ -91,16 +91,19 @@ public class lambdaCopy implements RequestHandler<S3Event, String> {
                 while (null != (doc = br.readLine())){
                     numRead++;
                     try {
-                        EventDocument evtDoc = parsePOJO(doc);
-                        AvroEvent avroEvent = JsonAvroCloner.clone(evtDoc);
+                        AnalyticsEventDocument evtDoc = parsePOJO(doc);
+                        AvroEvent avroEvent = Json2AvroCloner.clone(evtDoc);
                         s3AvroWriter.append(avroEvent);
                     } catch (POJOException pjex) {
                         jsonErrors++;
+                        String errmsg = pjex.getMessage();
+                        int firstCR = errmsg.indexOf("\n");
+                        System.out.println("JACKSON: " + errmsg.substring(0, (firstCR > 0) ? firstCR : errmsg.length()));
                     } catch (IOException ioex) {
                         avroErrors++;
                         String errmsg = ioex.getMessage();
                         int firstCR = errmsg.indexOf("\n");
-                        System.out.println(errmsg.substring(0, (firstCR > 0) ? firstCR : errmsg.length()));
+                        System.out.println("AVRO: " + errmsg.substring(0, (firstCR > 0) ? firstCR : errmsg.length()));
                     }
                 }
 
@@ -134,18 +137,18 @@ public class lambdaCopy implements RequestHandler<S3Event, String> {
     }
 
 
-    EventDocument parsePOJO(String doc) throws POJOException {
+    AnalyticsEventDocument parsePOJO(String doc) throws POJOException {
 
-        EventDocument jsonDoc = null;
+        AnalyticsEventDocument jsonDoc = null;
         try {
             try {
-                jsonDoc = mapper.readValue(doc, EventDocument.class);
+                jsonDoc = mapper.readValue(doc, AnalyticsEventDocument.class);
             } catch (UnrecognizedPropertyException upex) {
                 System.err.println(String.format("JACKSON at %s for \nunmapped property %s at %s ", new Date(), upex.getUnrecognizedPropertyName(), upex.getPathReference()));
                 //TODO: stats in lambda context
                 unrecognizedPropertyErrors++;
                 //upex.printStackTrace();
-                jsonDoc = looseMapper.readValue(doc, EventDocument.class);
+                jsonDoc = looseMapper.readValue(doc, AnalyticsEventDocument.class);
             }
             return jsonDoc;
         } catch (IOException ioex) {
